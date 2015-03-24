@@ -1,7 +1,7 @@
 library(RMySQL)
 library(dplyr)
 
-mydb = dbConnect(MySQL(), user='root', password='asdf456', dbname='sme2', host='localhost')
+mydb = dbConnect(MySQL(), user='root', password='', dbname='sme2', host='localhost')
 rank <-c()
 vec_of_times <- c()
 rs = dbSendQuery(mydb, "SELECT id FROM sme2.articles where visits > 5000 and id_category = 11")
