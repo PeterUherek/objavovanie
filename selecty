@@ -1,0 +1,10 @@
+SQL 
+
+Count of unique visits for a specific atricle
+select count(*) from (select distinct(cookie), happened_at  from sme2.visits where sme_id = 5049581) as count_unique_visits ;
+
+Select all unique visits for a spefic atricle
+select distinct(cookie), happened_at  from sme2.visits where sme_id = 5049581;
+
+Select articles with visit rate largest than x
+SELECT * FROM sme2.articles where visits > 10000;
