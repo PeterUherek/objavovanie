@@ -34,6 +34,7 @@ get_rank_and_time <- function(article_id,vec_of_times,rank,mydb){
   vec_of_times <- get_time(date,r,vec_of_times)
   output <- list(rank,vec_of_times)
   return (output)
+
 }
 
 get_date <- function(article_id,mydb){
