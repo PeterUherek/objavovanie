@@ -15,7 +15,7 @@ vec_of_times <- output[[2]]
 }
 
 plot(vec_of_times,rank)
-res=lm(rank~vec_of_timetys)
+res=lm(rank~vec_of_times)
 abline(res)
 
 
