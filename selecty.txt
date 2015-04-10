@@ -10,10 +10,10 @@ Select articles with visit rate largest than x
 SELECT * FROM sme2.articles where visits > 10000;
 
 
-Select pocet vsetkych pristupov do 24h od vydania clanku pre kazdy clanok v dany den.
+Pocet vsetkych pristupov do 24h od vydania clanku pre kazdy clanok v dany den.
 select v.sme_id,count(v.sme_id) from visits as v join sme2.articles a on v.sme_id=a.id where date(a.published_at) = "2009-10-07" and v.happened_at >= a.published_at and v.happened_at <= DATE_ADD(a.published_at,INTERVAL 1 DAY) group by v.sme_id; 
 
-select pocet unique pristupov do 24h od vydania clanku pre kazdy clanok v dany den.
+Pocet unique pristupov do 24h od vydania clanku pre kazdy clanok v dany den.
 select g.sme_id,count(g.sme_id) from (select v.sme_id from visits as v join sme2.articles a on v.sme_id=a.id where date(a.published_at) = "2009-10-07" and v.happened_at >= a.published_at and v.happened_at <= DATE_ADD(a.published_at,INTERVAL 1 DAY) group by v.sme_id,v.cookie) as g group by g.sme_id; 
 
 Vsetky unique pristupi na konkretny clanok do 24 h od vydania clanku.
