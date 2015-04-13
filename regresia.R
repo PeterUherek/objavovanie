@@ -49,7 +49,7 @@ get_rank_and_time <- function(article_id,vec_of_times,rank,mydb){
 
 
 get_date <- function(article_id,mydb){
-  rs = dbSendQuery(mydb, sprintf("select distinct(v.cookie), v.happened_at from sme2.visits as v join sme2.articles a on v.sme_id=a.id where v.sme_id = %d and v.happened_at >= a.published_at and v.happened_at <= DATE_ADD(a.published_at,INTERVAL 1 DAY)",article_id))
+  rs = dbSendQuery(mydb, sprintf("select distinct(v.cookie), v.happened_at from visits as v join articles a on v.sme_id=a.id where v.sme_id = %d and v.happened_at >= a.published_at and v.happened_at <= DATE_ADD(a.published_at,INTERVAL 1 DAY)",article_id))
   data = fetch(rs, n=-1)
   #Formatovanie casu pre vsetky pristupy
   date <- as.POSIXct(data[[2]], format = "%Y-%m-%d %H:%M:%S")
