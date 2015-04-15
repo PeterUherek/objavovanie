@@ -39,7 +39,6 @@ Slovenská technická univerzita}
 
 
 \section{Úvod}
-
 V súčasnosti sa na webe takmer všetko podriaďuje analytike, čítanosti a 
 návštevnosti s cieľom udržať na svojom webovom sídle čo najviac používateľov na 
 čo najdlhší čas. Prevádzkovatelia portálov, ktoré prinášajú rozsiahly a 
@@ -52,71 +51,93 @@ nielen spätné vyhodnocovanie čítanosti jednotlivých článkov, ale napr. aj
 predpovedanie popularity jednotlivých článkov či tém, čo môže následne ovplyvniť 
 rozloženie webovej stránky. 
 
-
 Našou úlohou bude zostrojiť model predikcie popularity článkov na základe týchto dát. Popularita článkov je z pohľadu času nestála. Inú popularitu môže mať článok hodinu od vydania a inú deň po vydaní. V našom kontexte budeme popularitu chápať ako počet všetkých prístupov k článku po dobu jedného dňa od jeho vydania. Pre predikovanie počtu prístupov použijeme niektorú z metód regresie v strojovom učení. Zaujímavý vplyv na popularitu článku môže mať téma článku, názov článku alebo autor článku preto by sme sa radi zamerali aj na skúmanie vplyvu týchto faktorov na samotnú popularitu článkov.
 
-
-
 \section{Opis dát}
-V rámci diplomovej práce sme od vedúceho obdržali 15-dňový dump 
-internetového vydania denníka SME obsahujúci 11.996.530 záznamov. V dátach sa 
-nachádzajú údaje prístupov používateľov na články stránky sme.sk, ktoré sú pod 
-kategóriou novinky. Dump obsahuje tabuľku visits s nasledovnými stĺpcami 
-(niektoré stĺpce vynechávame z dôvodu chýbajúcich dát, príkladom sú stĺpce 
-obsahujúce nulovú hodnotu pre každý záznam v tabuľke):
+V rámci diplomovej práce sme od vedúceho obdržali z časti predspracované dáta z 15-dňového dumpu internetového vydania denníka SME. Pôvodný dump obsahoval iba jednu tabuľku, v ktorej sa nachádzali údaje prístupov používateľov na články stránky sme.sk. Tieto dáta boli rozšírene v diplomovej práci Pavla Sopka \cite{diplomovka} o dalších 5 tabuliek, ktoré obsahujú rozšírené dáta o článkoch. Pre náše potreby sme tieto rozšírené dáta využili, čo nám uľahčilo fázu predspracovania. Najzaujimavejšie z týchto dát sú dve tabuľky a to tabuľka visits a tabuľka articles.
 
+Tabuľka visits obsahuje vyčistené dáta pôvodného dumpu a je tvorená nasledovnými stĺpcami:
 \begin{itemize}
 \renewcommand{\labelitemi}{$\bullet$}
   \item Časová pečiatka vytvorenia záznamu
-  \item ID používateľa registrovaného na sme.sk
+  \item Cookie použviateľa, poďla, ktorej budeme identifikovať jedinečnosť používateľa
   \item IP adresa používateľa
-  \item URL adresa článku na ktorý používateľ pristupoval
-  \item URL stránky odkiaľ používateľ prišiel na daný článok (prázdny 
-reťazec v prípade priameho prístupu)
-  \item Dostupné informácie o prístupe používateľa (internetový prehliadač, OS systém)
+  \item ID článku, na ktorý používateľ pristupoval
+  \item ID miesta alebo článku odkiaľ používateľ pristupoval
+  \item Dostupné informácie o prístupe používateľa (počítač, mobil, tablet)
+  \item Lokácia odkiaľ používateľ pristupoval (mesto, štát)
 \end{itemize}
+
+Tabuľka articles je tvorená informáciami o článkoch a má nasledovné stĺpce:
+\begin{itemize}
+\renewcommand{\labelitemi}{$\bullet$}
+  \item ID sekcie a ID kategórie
+  \item Titulok článku
+  \item Obsah článku s html značkami
+  \item Obsah článku bez html značiek (čistý text) 
+  \item Lematizovaný titulok článku
+  \item Lematizovaný obsah článku
+  \item Hodnota všetkých lematizovaných slov z metódy TFI-DF 
+  \item Počet všetkých návštev (nie unikátných)  
+  \item Dátum publikovania
+\end{itemize}
+
+\section{Práce iných autorov}
+Naším prvým zdrojom je diplomová práca od Bc. Pavla Sopka \cite{diplomovka}. 
+V práci sme sa bližšie zoznámili s postupom spracovania slovenského textu ako je odstraňovanie stop slov, odstránenie interpunkčných znamienok, lematizácia, či hľadanie prídavných mien medzi slovami.
+
+Ďalší zdroj sa zaoberá otázkami, ktoré riešime aj my:
+\begin{itemize}
+\renewcommand{\labelitemi}{$\bullet$}
+  \item Ovplyvňuje kategória článku jeho populárnosť?
+  \item Uprednostňujú čitatelia fakty, alebo preferujú citovo zararbený text?
+  \item Je v tom nejaký rozdiel ak článok spomenie slávnu osobu? Záleží to od autora článku?
+\end{itemize}
+
+Práca teda skúma predpovedanie popularity článkov ešte pred ich vydaním. Vytvorí sa viacrozmerný priestor na základe viacerých vlastností článku a odhaduje sa úspešnosť týchto vlastností, na základe ktorých sa určuje populárnosť. Práca skúma regresné aj klasifikačné metódy strojového učenia \cite{pulse}.
+
+Posledná práca sa venuje výberom populárnych článkov na titulnú stranu, pričom používa modelovanie podľa témy (Topic Modeling). Práca konštatuje, že odporúčanie dôležitých novinových článkov z veľkej sady je v prípade použitia len obsahu článkov ťažkou úlohou \cite{topic}.
 
 \section{Postup}
 \subsection{Predspracovanie}
-Niektoré dáta sú nekonzistentné a obsahujú chyby, ktoré by viedli k 
-nerelevantným výsledkom, a preto bude potrebné dáta pred-spracovať. Našou úlohou 
-taktiež bude zozbierať nové dáta a tak rozšíriť pôvodný dataset. Dataset by sme 
-chceli obohatiť o text článku, meno autora, dĺžku článku a iné doplňujúce 
-informácie, ktoré bude možné zozbierať pomocou URL odkazu článku. Preto je 
-prvoradé odstrániť dáta s nesprávnym URL odkazom. V datasete 
-sme identifikovali 3818 (0,03 \%) takýchto záznamov. Text článkov by pred 
-spracovaním v nami vybranej metóde musel byť upravený do správnej formy a to 
-pomocou prevedenia slov na korene slov prostredníctvom lematizácie a odstránenia stop slov.
+Veľká časť z dát už bola nejakým spôsobom predspracovaná, ale i napriek tomu niektoré stĺpce neobsahovali požadované hodnoty a preto ich bolo potrebné dodatočne dopracovať. Jedným z takýchto stĺpcov bol stĺpec lematizovanej titulky a obsahu článku v tabuľke articles. Z celkového počtu 151.577 článkov bolo lematizovaných iba 49.300 (33 \%) článkov a nelematizovaných 102.277 (67 \%) článkov. Pre naše potreby nám tento počet pôvodne lematizovaných článkov nestačí, keďže väčšina týchto článkov nebola vydaná v čase zbierania datasetu a z toho dôvodu ich nemôžeme použiť. Preto bolo potrebné nájsť spôsob ako lematizovať ostatné články.
+ 
+Pre lematizáciu článkov sme napísali skript, ktorý každý obsah článku upravil v nasledovnej postupnosti:
+
+text bez html značiek $\rightarrow$ text bez interpunkčných znakov $\rightarrow$ text bez stop slov $\rightarrow$ lematizovaný text $\rightarrow$ lematizovaný text bez stop slov
+
+Pred lematizáciou odstraňujeme stop slová, aby sme do lematizátora podávali čo najmenší počet slov.
+
+Na samotnú lematizáciu článkov sme použili voľne dostupnú web službu našej fakulty - lemmatizer\footnote{dostupný na http://text.fiit.stuba.sk/lemmatizer/index.html (2015)}. Lematizér sme použili s nastavením rýchlej lematizácie, kde výstupom je plain-text obsahujúci najpravdepodobnejšie lemy oddelené medzerami.
+
+Po lematizácií opätovne odstraňujeme stop slová, ktoré neboli zachytené pred lematizáciou a po lematizácií môžu byť nájdene v zozname stop slov.
+Ako zoznam stop slov sme použili voľne dostupný projekt na google\footnote{Dostupné na https://code.google.com/p/stop-words/source/browse/trunk/stop-words/stop-words/stop-words-slovak.txt?spec=svn3\&r=3 (2015)}, ktorý však bolo nutné ručne doplniť o desiatky slov. Procesom lematizácie neprešlo 1555 článkov z dôvodu neznámeho kódovania na strane databázy.
+
+Príklad lematizácie:
+
+Pred:
+Minulý rok si študenti Gymnázia na Grösslingovej ulici založili Gamčácke divadlo ochotníkov. V krátkom čase debutovali komédiou MAThRIX a vďaka jej úspechu sa divadlo rozhodlo pripraviť ďalší projekt. Predstavili ho už v uplynulú sobotu v DK Lúky premiéru mala ich nová komédia Taká obyčajná mafia.
+
+Po:
+minulý rok si študent gymnázium na grösslingovej ulica založiť gamčácke divadlo ochotník v krátky čase debutovať komédia mathrix a vďaka jej úspech sa divadlo rozhodnúť pripraviť ďalší projekt predstaviť ho už v uplynulý sobota v dk lúka premiéra mala ich nový komédia taký obyčajná mafia
 
 \subsection{Transformácia}
-Takto spracovaný text môžeme modifikovať pomocou vzorkovania a nahradiť 
-tak pôvodné dáta menším počtom dát, z ktorých môžeme napríklad pomocou metódy 
-TF-IDF vyrobiť vektor hodnôt, ktorý zakóduje špecifickú informáciu o zázname v 
-datasete. Následne vektor môžeme použiť vo viacerých metódach strojového učenia.
+Takto spracovaný text budeme následne spracovávať pomocou metódy TD-IDF, ktorá pre každý článok vyrobí špecifický vektor, ktorého hodnoty predstavujú ako často sa slová nachádzajú v danom článku. Takto vyrobený vektor môžeme použiť vo viacerých metódach strojového učenia.
 
-\subsection{Metóda}
-Spracovanie datasetu a predikcia popularity môžu byť založené na viacerých 
-metódach strojového učenia s učiteľom (supervised machine learning). Kedže 
-chceme číselne vyjadriť popularitu článku, použijeme niektorú z metód regresie, 
-pričom na prvé testovania použijeme lineárnu regresiu. Predikcia by mohla 
-vychádzať z viacerých údajov a to z názvu článku, obsahu článku, dĺžky článku a počtu 
-prístupov. Keďže obsah článku nerozhoduje o jeho navštívení (používateľ najskôr 
-navštívi článok až potom vidí jeho obsah), nebude mať veľký dopad na určenie 
-popularity.
+\subsection{Predpokladaný scenár použitia}
+Ako bolo spomínané v úvode, popularitu článku nemôžme empiricky zhodnotiť bez určeného časového obdobia (po jednej hodine sa článok nemusí ešte uchytiť, po jednom dni už môže článok stagnovať na popularite). Väčšina článkov nadobúda po zverejnení kopček (tzv. peak) maximálnych čítaní v krátkom čase, po ktorom začína čítanosť rýchlo stagnovať a zvyšuje sa už len o priemerné hodnoty. Na základe toho sme definovali popularitu ako počet čítaní po publikovaní v krátkom časovom okne, napríklad po 10 hodinách. Našim cieľom je pokryť toto maximálne dosiahnutie čítanosti v definovanom krátkom čase. Rozhodli sme sa brať do úvahy iba čas po vydaní, ignorujeme možné periodické výkyvy popularity (napríklad članok o jesennej móde bude pravidelne čítaný na jeseň), pretože nás zaujímajú iba články, ktoré nadobudli svoju popularity po ich publikovaní.
 
-\subsection{Testovanie}
-Pre potreby testovania si z dostupných dát vytvoríme trénovaciu množinu 
-a testovaciu množinu. Tieto dve množiny vytvoríme náhodne aby sme zachovali diverzitu v dátach. Výsledky testov vybranej metódy môžeme porovnať s 
-historickými dátami a zistiť na koľko percent sa popularita článkov predpovedaná 
-našou metódou líšila od skutočnosti. Pred týmto krokom bude avšak potrebné z 
-dostupných dát vytvoriť graf popularity jednotlivých článkov pomocou ktorého 
-budeme merať úspešnosť vybranej metódy.
+Popularitu článkov budeme predikovať pomocou metódy viacnásobnej lineárnej regresie, ktorá skúma vzťahy medzi viacerými premennými. V našom prípade premenné použité vo viacnásobnej lineárnej regresie budú vektory z metódy TD-IDF a jednotlivé prístupy k článkom. V prípade, ak by viacnásobna lineárna regresia nedosahovala požadované výsledky vektor prevedieme na logaritmický tvar a použijeme ho opätovne vo viacnásobnej lineárnej regresií. 
 
-\subsection{Problémy}
-Viaceré problémy budú spojené s vybraním správnej metódy strojového učenia na 
-predikciu popularity článkov. Ďalším problémom, s ktorým sa budeme potýkať je 
-spracovanie veľkého množstva dát, ktoré bude vyžadovať špecifické postupy pri 
-implementácií vybranej metódy. V neposlednom rade problémové môže byť 
-spracovanie textu a to hlavne pri prevádzaní slov na korene slov.
+\subsection{Vyhodnocovanie}
+Na vyhodnotenie metódy budeme používať krížovú validáciu. Dáta rozdelíme na trénovaciu a testovaciu množinu a poďla výsledkov testovacej množiny vyhodnotíme presnosť našej metódy. Tento proces budeme opakovať vždy s inou trénovaciou a testovaciou množinou. 
+
+Presnosť výsledkov popularity budeme merať podľa premennej r2, ktorá môže nadobúdať hodnoty v intervale 0 až 1, kde hodnota nula znamená, že dáta nesedia pre danú krivku lineárnej regresie a hodnota 1 znamená, že dáta presne kopírujú krivku lineárnej regresie.
+
+\begin{thebibliography}{widest entry}
+  \bibitem{diplomovka} Sopko, Pavol, Odporúčanie novinových článkov zohľadňujúce externý kontext používateľa, 2014, FIIT STU Bratislava
+  \bibitem{pulse} Bandari, Roja; Asur, Sitaram; Huberman, Bernardo A., The Pulse of News in Social Media : Forecasting Popularity, ICWSM 2012, AAAI Press
+  \bibitem{topic} Toraman, Cagri, News Selection with Topic Modeling, Fifth BCS-IRSG Symposium on Future Directions in Information Access (FDIA 2013)
+\end{thebibliography}
 
 \end{document}
