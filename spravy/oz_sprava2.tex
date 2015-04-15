@@ -1,0 +1,122 @@
+% !TeX spellcheck = sk_SK
+
+%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is the LaTeX source for the instructions to authors using
+% the LaTeX document class 'llncs.cls' for contributions to
+% the Lecture Notes in Computer Sciences series.
+% http://www.springer.com/lncs       Springer Heidelberg 2006/05/04
+%
+% It may be used as a template for your own input - copy it
+% to a new file with a new name and use it as the basis
+% for your article.
+%
+% NB: the document class 'llncs' has its own and detailed documentation, see
+% ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\documentclass[runningheads,a4paper]{llncs}
+
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage[slovak]{babel}
+\usepackage[utf8]{inputenc}
+
+\usepackage{url}
+\begin{document}
+\title{Predikcia popularity článkov}
+\subtitle{Objavovanie znalostí}
+\titlerunning{Predikcia popularity článkov}
+\author{Martin Číž, Peter Uherek}
+\institute{Fakulta informatiky a informačných technológií,\\
+Slovenská technická univerzita}
+\authorrunning{Predikcia popularity článkov}
+\maketitle
+
+
+\section{Úvod}
+
+V súčasnosti sa na webe takmer všetko podriaďuje analytike, čítanosti a 
+návštevnosti s cieľom udržať na svojom webovom sídle čo najviac používateľov na 
+čo najdlhší čas. Prevádzkovatelia portálov, ktoré prinášajú rozsiahly a 
+dynamický informačný obsah (typicky internetové vydania novín, týždenníkov) 
+disponujú veľkým množstvom sekvenčných dát, ktoré zachytávajú správanie sa 
+používateľov, históriu ich postupného prechádzania danej webovej lokality. 
+Taktiež uchovávajú informácie o svojich článkoch, či už je to samotný názov, 
+obsah, dátum vydania alebo téma, ktorej sa článok venuje. Z týchto dát je možné 
+nielen spätné vyhodnocovanie čítanosti jednotlivých článkov, ale napr. aj 
+predpovedanie popularity jednotlivých článkov či tém, čo môže následne ovplyvniť 
+rozloženie webovej stránky. 
+
+
+Našou úlohou bude zostrojiť model predikcie popularity článkov na základe týchto dát. Popularita článkov je z pohľadu času nestála. Inú popularitu môže mať článok hodinu od vydania a inú deň po vydaní. V našom kontexte budeme popularitu chápať ako počet všetkých prístupov k článku po dobu jedného dňa od jeho vydania. Pre predikovanie počtu prístupov použijeme niektorú z metód regresie v strojovom učení. Zaujímavý vplyv na popularitu článku môže mať téma článku, názov článku alebo autor článku preto by sme sa radi zamerali aj na skúmanie vplyvu týchto faktorov na samotnú popularitu článkov.
+
+
+
+\section{Opis dát}
+V rámci diplomovej práce sme od vedúceho obdržali 15-dňový dump 
+internetového vydania denníka SME obsahujúci 11.996.530 záznamov. V dátach sa 
+nachádzajú údaje prístupov používateľov na články stránky sme.sk, ktoré sú pod 
+kategóriou novinky. Dump obsahuje tabuľku visits s nasledovnými stĺpcami 
+(niektoré stĺpce vynechávame z dôvodu chýbajúcich dát, príkladom sú stĺpce 
+obsahujúce nulovú hodnotu pre každý záznam v tabuľke):
+
+\begin{itemize}
+\renewcommand{\labelitemi}{$\bullet$}
+  \item Časová pečiatka vytvorenia záznamu
+  \item ID používateľa registrovaného na sme.sk
+  \item IP adresa používateľa
+  \item URL adresa článku na ktorý používateľ pristupoval
+  \item URL stránky odkiaľ používateľ prišiel na daný článok (prázdny 
+reťazec v prípade priameho prístupu)
+  \item Dostupné informácie o prístupe používateľa (internetový prehliadač, OS systém)
+\end{itemize}
+
+\section{Postup}
+\subsection{Predspracovanie}
+Niektoré dáta sú nekonzistentné a obsahujú chyby, ktoré by viedli k 
+nerelevantným výsledkom, a preto bude potrebné dáta pred-spracovať. Našou úlohou 
+taktiež bude zozbierať nové dáta a tak rozšíriť pôvodný dataset. Dataset by sme 
+chceli obohatiť o text článku, meno autora, dĺžku článku a iné doplňujúce 
+informácie, ktoré bude možné zozbierať pomocou URL odkazu článku. Preto je 
+prvoradé odstrániť dáta s nesprávnym URL odkazom. V datasete 
+sme identifikovali 3818 (0,03 \%) takýchto záznamov. Text článkov by pred 
+spracovaním v nami vybranej metóde musel byť upravený do správnej formy a to 
+pomocou prevedenia slov na korene slov prostredníctvom lematizácie a odstránenia stop slov.
+
+\subsection{Transformácia}
+Takto spracovaný text môžeme modifikovať pomocou vzorkovania a nahradiť 
+tak pôvodné dáta menším počtom dát, z ktorých môžeme napríklad pomocou metódy 
+TF-IDF vyrobiť vektor hodnôt, ktorý zakóduje špecifickú informáciu o zázname v 
+datasete. Následne vektor môžeme použiť vo viacerých metódach strojového učenia.
+
+\subsection{Metóda}
+Spracovanie datasetu a predikcia popularity môžu byť založené na viacerých 
+metódach strojového učenia s učiteľom (supervised machine learning). Kedže 
+chceme číselne vyjadriť popularitu článku, použijeme niektorú z metód regresie, 
+pričom na prvé testovania použijeme lineárnu regresiu. Predikcia by mohla 
+vychádzať z viacerých údajov a to z názvu článku, obsahu článku, dĺžky článku a počtu 
+prístupov. Keďže obsah článku nerozhoduje o jeho navštívení (používateľ najskôr 
+navštívi článok až potom vidí jeho obsah), nebude mať veľký dopad na určenie 
+popularity.
+
+\subsection{Testovanie}
+Pre potreby testovania si z dostupných dát vytvoríme trénovaciu množinu 
+a testovaciu množinu. Tieto dve množiny vytvoríme náhodne aby sme zachovali diverzitu v dátach. Výsledky testov vybranej metódy môžeme porovnať s 
+historickými dátami a zistiť na koľko percent sa popularita článkov predpovedaná 
+našou metódou líšila od skutočnosti. Pred týmto krokom bude avšak potrebné z 
+dostupných dát vytvoriť graf popularity jednotlivých článkov pomocou ktorého 
+budeme merať úspešnosť vybranej metódy.
+
+\subsection{Problémy}
+Viaceré problémy budú spojené s vybraním správnej metódy strojového učenia na 
+predikciu popularity článkov. Ďalším problémom, s ktorým sa budeme potýkať je 
+spracovanie veľkého množstva dát, ktoré bude vyžadovať špecifické postupy pri 
+implementácií vybranej metódy. V neposlednom rade problémové môže byť 
+spracovanie textu a to hlavne pri prevádzaní slov na korene slov.
+
+\end{document}
