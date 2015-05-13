@@ -24,7 +24,7 @@ be_updated <-function(text,id,mydb){
 big_database_update <-function(stopwords,mydb){
   
   dbGetQuery(mydb, "SET NAMES 'cp1250'")
-  rs = dbSendQuery(mydb, "SELECT body_no_html,id FROM sme2.articles where body_lematized = '' and body_no_html != '' limit 50")
+  rs = dbSendQuery(mydb, "SELECT body_no_html,id FROM sme2.articles where body_lematized = 'Error' and body_no_html != ''")
   data = fetch(rs, n=-1)
   ids = data$id
   print(ids)
@@ -61,10 +61,12 @@ stopwords = readLines(TEXTFILE,encoding='UTF-8')
 mydb = dbConnect(MySQL(), user='root', password='asdf456', dbname='sme2', host='localhost',CharSet='utf8')
 dbGetQuery(mydb, "SET NAMES 'cp1250'")
 
-rs = dbSendQuery(mydb, "select count(*) from articles where body_lematized = '' and body_no_html != ''")
+rs = dbSendQuery(mydb, "select count(*) from articles where body_lematized = 'Error' and body_no_html != ''")
 count_raw = fetch(rs, n=-1)
+print (count_raw)
 all_count = strtoi(count_raw)
 count = all_count/50
+
 
 for (i in 1:count){
   

@@ -3,7 +3,7 @@ library(yaml)
 library(lattice)
 library(DAAG)
 
-db_config = yaml.load_file("db_config.yml")
+db_config = yaml.load_file("C:/Users/Peter/Documents/GitHub/objavovanie/db_config.yml")
 mydb = dbConnect(MySQL(), host=db_config$db$host, dbname=db_config$db$name, user=db_config$db$user, password=db_config$db$pass)
 
 rs = dbSendQuery(mydb, "SELECT id, visits, id_category, words, COALESCE(length_of_reading, 0) as length_of_reading
