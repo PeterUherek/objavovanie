@@ -87,7 +87,7 @@ Tabuľka {\em articles} je tvorená informáciami o článkoch a má nasledovné
   \item Lematizovaný titulok článku.
   \item Lematizovaný obsah článku.
   \item Hodnota všetkých lematizovaných slov z metódy TFI-DF.
-  \item Počet všetkých návštev (unikátných).
+  \item Počet všetkých návštev (unikátnych).
   \item Dátum publikovania.
 \end{itemize}
 
@@ -134,11 +134,11 @@ Po: minulý rok študent gymnázium grösslingovej ulica založiť gamčácke di
 \end{multicols}
 
 Po lematizácií opätovne odstraňujeme stop slová, ktoré neboli zachytené pred lematizáciou a po lematizácií môžu byť nájdene v zozname stop slov.
-Ako zoznam stop slov sme použili voľne dostupný project na google\footnote{Dostupný na \url{https://code.google.com/p/stop-words/source/browse/trunk/stop-words/stop-words/stop-words-slovak.txt?spec=svn3&r=3} (2015).}, ktorý však bolo nutné ručne doplniť o desiatky slov.
+Ako zoznam stop slov sme použili voľne dostupný projekt na Google\footnote{Dostupný na \url{https://code.google.com/p/stop-words/source/browse/trunk/stop-words/stop-words/stop-words-slovak.txt?spec=svn3&r=3} (2015).}, ktorý však bolo nutné ručne doplniť o desiatky slov.
 Procesom lematizácie neprešlo 1555 článkov z dôvodu neznámeho kódovania na strane databázy.
 
 Ako bolo spomínané v úvode, popularitu článku nemôžeme empiricky zhodnotiť bez určeného časového obdobia (po jednej hodine sa článok nemusí ešte uchytiť, po jednom dni už môže článok stagnovať na popularite).
-Väčšina článkov nadobúda po zverejnení kopček (tzv. peak) maximálnych čítaní v krátkom čase, po ktorom začína čítanosť rýchlo stagnovať a zvyšuje sa už len o priemerné hodnoty.
+Väčšina článkov nadobúda po zverejnení kopček (angl. peak) maximálnych čítaní v krátkom čase, po ktorom začína čítanosť rýchlo stagnovať a zvyšuje sa už len o priemerné hodnoty.
 Vytvorili sme si pre články ich priebeh zvyšujúceho sa počtu návštev v čase a na základe neho sme stanovili, že budeme brať počet navštívení článku 24 hodín po jeho vydaní.
 Z optimalizačných dôvodov sme si počty vypočítali a pripísali do nového stĺpca v tabuľke s článkami.
 
@@ -153,7 +153,7 @@ Výsledný vektor môžeme následne použiť vo viacerých metódach strojovéh
 Vzhľadom na to že chceme popularitu ohodnotiť na nejakej číselnej stupnici sme sa rozhodli použiť metódu strojového učenia s názvom viacnásobná lineárna regresia, ktorá skúma vzťahy medzi viacerými premennými.
 V našom prípade použité premenné budú vektory z metódy TD-IDF a jednotlivé prístupy k článkom.
 
-Problémom pri takomto prístupe sú outliari, teda články, ktoré sú počas dňa najviac čítane a svojou popularitou vyčnievajú od zvyšku článkov. Približne sa každý deň vydajú 3 takéto články z celkového počtu 400 článkov za jedeň deň. Riešením tohto problému bude odstranenie takýchto článkov z našej množiny dát.
+Problémom pri takomto prístupe sú outliari, teda články, ktoré sú počas dňa najviac čítane a svojou popularitou vyčnievajú od zvyšku článkov. Približne sa každý deň vydajú 3 takéto články z celkového počtu 400 článkov za jeden deň. Riešením tohto problému bude odstránenie takýchto článkov z našej množiny dát.
 
 % DM metóda: experimentovanie, nastavenie parametrov, trénovanie, testovanie, ...
 
