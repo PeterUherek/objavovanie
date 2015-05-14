@@ -1,0 +1,193 @@
+% !TeX spellcheck = sk_SK
+
+%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is the LaTeX source for the instructions to authors using
+% the LaTeX document class 'llncs.cls' for contributions to
+% the Lecture Notes in Computer Sciences series.
+% http://www.springer.com/lncs       Springer Heidelberg 2006/05/04
+%
+% It may be used as a template for your own input - copy it
+% to a new file with a new name and use it as the basis
+% for your article.
+%
+% NB: the document class 'llncs' has its own and detailed documentation, see
+% ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\documentclass[runningheads,a4paper]{llncs}
+
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage[slovak]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[bottom]{footmisc}
+
+\usepackage{url}
+\begin{document}
+\title{Predikcia popularity článkov}
+\subtitle{Objavovanie znalostí}
+\titlerunning{Predikcia popularity článkov}
+\author{Martin Číž, Peter Uherek}
+\institute{Fakulta informatiky a informačných technológií,\\
+Slovenská technická univerzita}
+\authorrunning{Predikcia popularity článkov}
+\maketitle
+
+
+\section{Úvod}
+  V súčasnosti sa na webe takmer všetko podriaďuje analytike, čítanosti a 
+návštev-nosti s cieľom udržať na svojom webovom sídle čo najviac používateľov na 
+čo najdlhší čas. Prevádzkovatelia portálov, ktoré prinášajú rozsiahly a 
+dynamický informačný obsah (typicky internetové vydania novín, týždenníkov) 
+disponujú veľkým množstvom sekvenčných dát, ktoré zachytávajú správanie sa 
+používateľov, históriu ich postupného prechádzania danej webovej lokality. 
+Taktiež uchovávajú informácie o svojich článkoch, či už je to samotný názov, 
+obsah, dátum vydania alebo téma, ktorej sa článok venuje. Z týchto dát je možné 
+nielen spätné vyhodnocovanie čítanosti jednotlivých článkov, ale napr. aj 
+predpovedanie popularity jednotlivých článkov či tém, čo môže následne ovplyvniť 
+rozloženie webovej stránky. 
+
+Našou úlohou je zostrojiť model predikcie popularity článkov na základe týchto dát.
+Popularita článkov je z pohľadu času nestála. Inú popularitu môže mať článok hodinu od vydania a inú deň po vydaní.
+V našom kontexte chápeme popularitu ako počet všetkých prístupov k článku po dobu jedného dňa od jeho vydania.
+Pre predikovanie počtu prístupov používame metódy regresie v strojovom učení.
+Zaujímavý vplyv na popularitu článku má téma článku, názov článku alebo autor článku, preto sa zameriavame na skúmanie vplyvu týchto faktorov na samotnú popularitu článkov.
+
+\section{Opis dát}
+V rámci diplomovej práce sme od vedúceho obdržali z časti predspracované dáta z 15-dňového dumpu internetového vydania denníka SME.
+Pôvodný dump obsahuje iba jednu tabuľku, v ktorej sa nachádzajú údaje prístupov používateľov na články stránky sme.sk.
+Tieto dáta sú rozšírené v diplomovej práci Pavla Sopka \cite{diplomovka} o ďalších 5 tabuliek, ktoré obsahujú rozšírené dáta o článkoch.
+Pre naše potreby tieto rozšírené dáta používame v rámci uľahčenia fázy predspracovania.
+Najzaujímavejšie z týchto dát sú dve tabuľky a to tabuľka {\em visits} a tabuľka {\em articles}.
+
+Tabuľka {\em visits} obsahuje vyčistené dáta pôvodného dumpu a je tvorená nasledovnými stĺpcami:
+\begin{itemize}
+\renewcommand{\labelitemi}{$\bullet$}
+  \item Časová pečiatka vytvorenia záznamu.
+  \item Cookie používateľa ktorou identifikujeme či sa jedná o toho istého používateľa.
+  \item IP adresa používateľa.
+  \item ID článku, na ktorý používateľ pristupoval.
+  \item ID miesta alebo článku odkiaľ používateľ pristupoval.
+  \item Dostupné informácie o prístupe používateľa (počítač, mobil, tablet).
+  \item Lokácia odkiaľ používateľ pristupoval (mesto, štát).
+\end{itemize}
+
+Tabuľka {\em articles} je tvorená informáciami o článkoch a má nasledovné stĺpce:
+\begin{itemize}
+\renewcommand{\labelitemi}{$\bullet$}
+  \item ID sekcie a ID kategórie.
+  \item Titulok článku.
+  \item Obsah článku s html značkami.
+  \item Obsah článku bez html značiek (čistý text).
+  \item Lematizovaný titulok článku.
+  \item Lematizovaný obsah článku.
+  \item Hodnota všetkých lematizovaných slov z metódy TFI-DF.
+  \item Počet všetkých návštev (unikátných).
+  \item Dátum publikovania.
+\end{itemize}
+
+\section{Práce iných autorov}
+Naším prvým zdrojom je diplomová práca od Pavla Sopka \cite{diplomovka}. 
+Práca nás bližšie oboznamuje s postupom spracovania slovenského textu ako je odstraňovanie stop slov, odstránenie interpunkčných znamienok, lematizácia, či hľadanie prídavných mien medzi slovami.
+
+Predpoveďou popularity podobne ako my sa zaoberá aj článok \cite{pulse}. Základne otázky, ktoré tento článok rozoberá, sú:
+\begin{itemize}
+\renewcommand{\labelitemi}{$\bullet$}
+  \item Ovplyvňuje kategória článku jeho populárnosť?
+  \item Uprednostňujú čitatelia fakty, alebo preferujú citovo zafarbený text?
+  \item Má zmienka slávnej osoby vplyv na popularitu? Závisí to od autora článku?
+\end{itemize}
+Článok skúma predpovedanie popularity článkov ešte pred ich vydaním. Vytvorí sa viacrozmerný priestor na základe viacerých vlastností článku a odhaduje sa úspešnosť tých vlastností, na základe ktorých sa určuje populárnosť. Práca používa regresné aj klasifikačné metódy strojového učenia.
+
+Článok \cite{topic} sa venuje výberom populárnych článkov na titulnú stranu, pričom používa modelovanie podľa témy (Topic Modeling).
+Práca konštatuje, že odporúčanie dôležitých novinových článkov z veľkej sady je v prípade použitia len obsahu článkov ťažkou úlohou.
+
+\section{Predspracovanie}
+% Predspracovanie a výber atribútov: použité metódy, zdôvodnenie
+Veľká časť z dát už bola predspracovaná, ale i napriek tomu niektoré stĺpce neobsahujú požadované hodnoty a je potrebné ich dodatočne dopracovať.
+Jedným z takýchto stĺpcov je stĺpec lematizovanej titulky a obsahu článku v tabuľke {\em articles}.
+Z celkového počtu 151.577 článkov bolo lematizovaných iba 49.300 (33 \%) článkov a nelematizovaných 102.277 (67 \%) článkov.
+Pre naše potreby nám tento počet pôvodne lematizovaných článkov nestačí, keďže väčšina týchto článkov nebola vydaná v čase zbierania datasetu a z toho dôvodu ich nemôžeme použiť.
+Preto bolo potrebné nájsť spôsob ako lematizovať ostatné články.
+
+Pre lematizáciu článkov sme navrhli skript, ktorý každý obsah článku upraví v nasledovnej postupnosti:
+\newline
+\newline
+text bez html značiek $\rightarrow$ text bez interpunkčných znakov $\rightarrow$ text bez stop slov $\rightarrow$ lematizovaný text $\rightarrow$ lematizovaný text bez stop slov
+\newline
+
+Pred lematizáciou odstraňujeme stop slová, aby sme do lematizátora podávali čo najmenší počet slov.
+Na samotnú lematizáciu článkov sme použili voľne dostupnú web službu našej fakulty - lemmatizer\footnote{Dostupný na \url{http://text.fiit.stuba.sk/lemmatizer/index.html (2015).}}.
+Lematizér sme použili s nastavením rýchlej lematizácie, kde výstupom je čistý text obsahujúci najpravdepodobnejšie lemy oddelené medzerami.
+
+V nasledujúcich riadkoch je uvedený príklad lematizovaného textu:
+
+\begin{multicols}{2}
+Pred: Minulý rok si študenti Gymnázia na Grösslingovej ulici založili Gamčácke divadlo ochotníkov. V krátkom čase debutovali komédiou MAThRIX a vďaka jej úspechu sa divadlo rozhodlo pripraviť ďalší projekt. Predstavili ho už v uplynulú sobotu v DK Lúky premiéru mala ich nová komédia Taká obyčajná mafia.
+
+Po: minulý rok študent gymnázium grösslingovej ulica založiť gamčácke divadlo ochotník krátky čase debutovať komédia mathrix vďaka úspech divadlo rozhodnúť pripraviť ďalší projekt predstaviť uplynulý sobota dk lúka premiéra mala nový komédia obyčajná mafia
+\end{multicols}
+
+Po lematizácií opätovne odstraňujeme stop slová, ktoré neboli zachytené pred lematizáciou a po lematizácií môžu byť nájdene v zozname stop slov.
+Ako zoznam stop slov sme použili voľne dostupný project na google\footnote{Dostupný na \url{https://code.google.com/p/stop-words/source/browse/trunk/stop-words/stop-words/stop-words-slovak.txt?spec=svn3&r=3} (2015).}, ktorý však bolo nutné ručne doplniť o desiatky slov.
+Procesom lematizácie neprešlo 1555 článkov z dôvodu neznámeho kódovania na strane databázy.
+
+Ako bolo spomínané v úvode, popularitu článku nemôžeme empiricky zhodnotiť bez určeného časového obdobia (po jednej hodine sa článok nemusí ešte uchytiť, po jednom dni už môže článok stagnovať na popularite).
+Väčšina článkov nadobúda po zverejnení kopček (tzv. peak) maximálnych čítaní v krátkom čase, po ktorom začína čítanosť rýchlo stagnovať a zvyšuje sa už len o priemerné hodnoty.
+Vytvorili sme si pre články ich priebeh zvyšujúceho sa počtu návštev v čase a na základe neho sme stanovili, že budeme brať počet navštívení článku 24 hodín po jeho vydaní.
+Z optimalizačných dôvodov sme si počty vypočítali a pripísali do nového stĺpca v tabuľke s článkami.
+
+%predspracovanie: ako sa zmenila množina dát
+Po predspracovaní sme v prvom rade doplnili tabuľku {\em articles} o chýbajúce dáta pomocou lematizácie textu a pribudol nový stĺpec s počtom navštívení 24 hodín po publikovaní.
+
+Lematizovaný text následne spracovávame pomocou metódy TD-IDF, ktorá pre každý článok vyrobí špecifický vektor, hodnoty ktorého predstavujú ako často sa slová nachádzajú v danom článku.
+Výsledný vektor môžeme následne použiť vo viacerých metódach strojového učenia.
+
+\section{Použité metódy}
+%    DM metódy: stručný opis, zdôvodnenie výberu
+Vzhľadom na to že chceme popularitu ohodnotiť na nejakej číselnej stupnici sme sa rozhodli použiť metódu strojového učenia s názvom viacnásobná lineárna regresia, ktorá skúma vzťahy medzi viacerými premennými.
+V našom prípade použité premenné budú vektory z metódy TD-IDF a jednotlivé prístupy k článkom.
+
+Problémom pri takomto prístupe sú outliari, teda články, ktoré sú počas dňa najviac čítane a svojou popularitou vyčnievajú od zvyšku článkov. Približne sa každý deň vydajú 3 takéto články z celkového počtu 400 článkov za jedeň deň. Riešením tohto problému bude odstranenie takýchto článkov z našej množiny dát.
+
+% DM metóda: experimentovanie, nastavenie parametrov, trénovanie, testovanie, ...
+
+
+\section{Vyhodnotenie}
+% Spôsob vyhodnocovania výsledkov: stručný opis, zdôvodnenie
+Na vyhodnotenie metódy používame krížovú validáciu.
+Jej princíp spočíva v rozdelení datasetu na K rovnako veľkých vzoriek (angl. folds).
+Následne prebehne algoritmus K-krát, pričom vždy je jedna vzorka testovacia, zatiaľ čo všetky ostatné vzorky slúžia na trénovanie.
+
+Presnosť výsledkov popularity meriame podľa premennej r2, ktorá môže nadobúdať hodnoty v intervale 0 až 1, kde hodnota nula znamená, že dáta nesedia pre danú krivku lineárnej regresie a hodnota 1 znamená, že dáta presne kopírujú krivku lineárnej regresie.
+
+% vyhodnotenie: vyhodnotenie výsledkov, porovnanie metód (aj s publikovanými prácami) a náčrt ďalšieho vhodného smerovania projektu
+
+
+\begin{thebibliography}{7}
+  \bibitem{diplomovka} Sopko, Pavol, Odporúčanie novinových článkov zohľadňujúce externý kontext používateľa, 2014, FIIT STU Bratislava
+  \bibitem{pulse} Bandari, Roja; Asur, Sitaram; Huberman, Bernardo A., The Pulse of News in Social Media : Forecasting Popularity, ICWSM 2012, AAAI Press
+  \bibitem{topic} Toraman, Cagri, News Selection with Topic Modeling, Fifth BCS-IRSG Symposium on Future Directions in Information Access (FDIA 2013)
+\end{thebibliography}
+
+\clearpage
+{\Large Podiel práce\par}
+
+\vspace{5mm}
+
+\begin{tabular}{|l|l|l|}
+  \hline
+  \textbf{Meno} & \textbf{Venoval sa hlavne} & \textbf{Percentuálny podiel} \\
+  \hline
+  Martin Číž & Písanie dokumentov, práca nad databázou & 50 \% \\
+  \hline
+  Peter Uherek & Repozitár, skriptá v R & 50 \% \\
+  \hline
+ \end{tabular}
+
+\end{document}
