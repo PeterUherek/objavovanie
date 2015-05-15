@@ -37,7 +37,16 @@
 Slovenská technická univerzita}
 \authorrunning{Predikcia popularity článkov}
 \maketitle
-
+\begin{abstract}
+  Našou úlohou je zostrojiť model predikcie popularity článkov na základe spravodajských článkov, ktoré sú v textovej podobe.
+  Popularita článkov je z pohľadu času nestála. Inú popularitu môže mať článok hodinu od vydania a inú deň po vydaní.
+  V našom kontexte chápeme popularitu ako počet všetkých jedinečných prístupov k článku v určitej dobe od jeho vydania.
+  Na začiatku sa pokúšame texty jednotlivých získaných článkov premeniť na vektor termov, text preto spracovávame vo fázach odstraňovanie stop slov a lematizácia.
+  Pre predikovanie počtu prístupov používame metódy regresie v strojovom učení.
+  Zaujímavý vplyv na popularitu článku má samotný text článku, názov článku alebo dĺžka článku, preto sa zameriavame na skúmanie vplyvu týchto faktorov na samotnú popularitu článkov.
+  Experimentom demonštrujeme použitie spomínaných metód, pričom poukazujeme na bariéry, ktoré nám bránia v presnom zmeraní predikcie.
+  Príkladom je neproporcionálne rozloženie článkov po zoradení do rebríčka popularity - existuje veľa priemerných a slabšie čítaných článkov a len malá množina článkov získava veľkú popularitu.
+\end{abstract}
 
 \section{Úvod}
   V súčasnosti sa na webe takmer všetko podriaďuje analytike, čítanosti a 
@@ -52,14 +61,9 @@ nielen spätné vyhodnocovanie čítanosti jednotlivých článkov, ale napr. aj
 predpovedanie popularity jednotlivých článkov či tém, čo môže následne ovplyvniť 
 rozloženie webovej stránky. 
 
-Našou úlohou je zostrojiť model predikcie popularity článkov na základe týchto dát.
-Popularita článkov je z pohľadu času nestála. Inú popularitu môže mať článok hodinu od vydania a inú deň po vydaní.
-V našom kontexte chápeme popularitu ako počet všetkých jedinčných prístupov k článku po dobu jedného dňa od jeho vydania.
-Pre predikovanie počtu prístupov používame metódy regresie v strojovom učení.
-Zaujímavý vplyv na popularitu článku má samotný text článku, názov článku alebo dĺžka článku, preto sa zameriavame na skúmanie vplyvu týchto faktorov na samotnú popularitu článkov.
-
 \section{Opis dát}
 V rámci diplomovej práce sme od vedúceho obdržali z časti predspracované dáta z 15-dňového dumpu internetového vydania denníka SME.
+Dáta sú zozbierané z obdobia 7.10. 2009 až 21.10. 2009.
 Pôvodný dump obsahuje iba jednu tabuľku, v ktorej sa nachádzajú údaje prístupov používateľov na články stránky sme.sk.
 Tieto dáta sú rozšírené v diplomovej práci Pavla Sopka \cite{diplomovka} o ďalších 5 tabuliek, ktoré obsahujú rozšírené dáta o článkoch.
 Pre naše potreby tieto rozšírené dáta používame v rámci uľahčenia fázy predspracovania.
@@ -104,7 +108,7 @@ Predpoveďou popularity podobne ako my sa zaoberá aj článok \cite{pulse}. Zá
 \end{itemize}
 Článok skúma predpovedanie popularity článkov ešte pred ich vydaním. Vytvorí sa viacrozmerný priestor na základe viacerých vlastností článku a odhaduje sa úspešnosť tých vlastností, na základe ktorých sa určuje populárnosť. Práca používa regresné aj klasifikačné metódy strojového učenia.
 
-Článok \cite{topic} sa venuje výberom populárnych článkov na titulnú stranu, pričom používa modelovanie podľa témy (Topic Modeling).
+Článok \cite{topic} sa venuje výberom populárnych článkov na titulnú stranu, pričom používa modelovanie podľa témy (angl. topic modeling).
 Práca konštatuje, že odporúčanie dôležitých novinových článkov z veľkej sady je v prípade použitia len obsahu článkov ťažkou úlohou.
 
 \section{Predspracovanie}
@@ -125,7 +129,7 @@ Pred lematizáciou odstraňujeme stop slová, aby sme do lematizátora podávali
 Na samotnú lematizáciu článkov sme použili voľne dostupnú web službu našej fakulty - lemmatizer\footnote{Dostupný na \url{http://text.fiit.stuba.sk/lemmatizer/index.html (2015).}}.
 Lematizér sme použili s nastavením rýchlej lematizácie, kde výstupom je čistý text obsahujúci najpravdepodobnejšie lemy oddelené medzerami.
 
-V nasledujúcich riadkoch je uvedený príklad lematizovaného textu po odstranení stop slóv:
+V nasledujúcich riadkoch je uvedený príklad lematizovaného textu po odstránení stop slov:
 
 \begin{multicols}{2}
 Pred: Minulý rok si študenti Gymnázia na Grösslingovej ulici založili Gamčácke divadlo ochotníkov. V krátkom čase debutovali komédiou MAThRIX a vďaka jej úspechu sa divadlo rozhodlo pripraviť ďalší projekt. Predstavili ho už v uplynulú sobotu v DK Lúky premiéru mala ich nová komédia Taká obyčajná mafia.
@@ -135,7 +139,7 @@ Po: minulý rok študent gymnázium grösslingovej ulica založiť gamčácke di
 
 Po lematizácií opätovne odstraňujeme stop slová, ktoré neboli zachytené pred lematizáciou a po lematizácií môžu byť nájdene v zozname stop slov.
 Ako zoznam stop slov sme použili voľne dostupný projekt na Google\footnote{Dostupný na \url{https://code.google.com/p/stop-words/source/browse/trunk/stop-words/stop-words/stop-words-slovak.txt?spec=svn3&r=3} (2015).}, ktorý však bolo nutné ručne doplniť o desiatky slov.
-Procesom lematizácie neprešlo 1555 článkov z dôvodu neznámeho kódovania na strane databázy. Všetký ostatné články sme po procese lematizácie uložili do databázy.  
+Procesom lematizácie neprešlo 1555 článkov z dôvodu neznámeho kódovania na strane databázy. Všetky ostatné články sme po procese lematizácie uložili do databázy.  
 
 Ako bolo spomínané v úvode, popularitu článku nemôžeme empiricky zhodnotiť bez určeného časového obdobia (po jednej hodine sa článok nemusí ešte uchytiť, po jednom dni už môže článok stagnovať na popularite).
 Väčšina článkov nadobúda po zverejnení kopček (angl. peak) maximálnych čítaní v krátkom čase, po ktorom začína čítanosť rýchlo stagnovať a zvyšuje sa už len o priemerné hodnoty.
@@ -144,29 +148,29 @@ Z optimalizačných dôvodov sme si počty vypočítali a pripísali do nového 
 
 \section{Viacnásobna linerárna regresia a spôsob jej vyhodnotenia}
 %    DM metódy: stručný opis, zdôvodnenie výberu
-Vzhľadom na to, že chceme skúmať závislosť obsahu článku na popularitu, návštevnosť, článku sme sa rozhodli použiť viacnásobnú lineárnu regresiu, ktorá skúma lineárnu závislosť medzi dvoma a viacerými premennými. Viacnásobná lineárna regresia sa dá vyjadriť vzorcom: 
+Vzhľadom na to, že chceme skúmať závislosť popularity od obsahu článku, sme sa rozhodli použiť viacnásobnú lineárnu regresiu, ktorá skúma lineárnu závislosť medzi dvoma a viacerými premennými. Viacnásobná lineárna regresia sa dá vyjadriť vzorcom: 
 \begin{displaymath}
-y_i = a_0 + a_1x_{1i} +  a_2x_{2i} \ldots + a_nx_{ni}
+y_i = a_0 + a_1x_{1i} +  a_2x_{2i} \ldots + a_nx_{ni},
 \end{displaymath}
-kde {\em y} predstavuje predikovaný atribút, v našom prípade počet unikátných náštev za 24 h, pre {\em i}-ty článok. Tento atribút sme pred aplikovaním v viacnásobnej lineárnej regresii dali do logaritmického tvaru z dôvodov veľkých rozdielov medzi jednotlivými hodnotami návštevnosti článkov. 
+kde $y_{i}$ predstavuje predikovaný atribút, v našom prípade počet unikátnych návštev za 24 hodín pre $i$-ty článok. Tento atribút sme pred aplikovaním v viacnásobnej lineárnej regresie previedli do logaritmického tvaru z dôvodu veľkých rozdielov medzi jednotlivými hodnotami návštevnosti článkov.
 
-Atribúty $x_{ij}$ predstavujú číselný vektor pre slová v článkoch získaný z korpusu všetkých článkov pomocou metódy TF-IDF. Číselné hodnoty $x_{ij}$ predstavujú doležitosť slóv, resp. výskyt slóv. Hodnota $x_{ij}$ slova pre daný članok {\em i} sa zvyšuje úmerne s počtom výskytov slova v dokumente, ale je kompenzovaná frekvenciou slová v korpuse, ktorá pomáha upraviť skutočnosť, že niektoré slová sa objavujú častejšie a tým pádom sú všeobecnejšie. Príkladom takýchto slóv sú prídavné mená. Hodnota $a_j$ predstavuje regresný koeficient pre $j$-tý atribút. 
-      
-Na vyhodnotenie metódy používame krížovú validáciu. Jej princíp spočíva v rozdelení datasetu na K vzoriek (angl. folds), ktoré sú tvorené ideálne rovnakým počtom článkov. Následne prebehne algoritmus K-krát, pričom vždy je jedna vzorka testovacia, zatiaľ čo všetky ostatné vzorky slúžia na trénovanie.
+Atribúty $x_{ij}$ predstavujú číselný vektor pre slová v článkoch získaných z korpusu všetkých článkov pomocou metódy TF-IDF. Číselné hodnoty $x_{ij}$ predstavujú dôležitosť slov, resp. výskyt slov. Hodnota $x_{ij}$ slova pre daný článok $i$ sa zvyšuje úmerne s počtom výskytov slova v dokumente, ale je kompenzovaná frekvenciou slova v korpuse. Frekvencia nám pomáha odhaliť slová, ktoré sa objavujú častejšie a tým pádom sú všeobecnejšie. Príkladom takýchto slov sú prídavné mená. Hodnota $a_j$ predstavuje regresný koeficient pre $j$-ty atribút.
+
+Na vyhodnotenie metódy používame krížovú validáciu. Jej princíp spočíva v rozdelení datasetu na K vzoriek (angl. folds), ktoré sú v ideálnom prípade tvorené rovnakým počtom článkov. Následne prebehne algoritmus K-krát, pričom vždy je jedna vzorka testovacia, zatiaľ čo všetky ostatné vzorky slúžia na trénovanie.
 
 Výsledky krížovej validácie sme verifikovali pomocou chyby predikcie krížovej validácie (angl. Cross-validation error estimate) (CV), ktorá sa vypočíta ako suma chýb predikcie zo všetkých vzoriek. Túto hodnotu dostaneme pomocou vzorca: 
 \begin{displaymath}
-CV_K = \sum_{k=1}^K \frac{n_k}{n} MSE_k
+CV_K = \sum_{k=1}^K \frac{n_k}{n} MSE_k,
 \end{displaymath}
-kde $K$ je počet vzoriek, $n$ je počet všetkých článkov a $n_k$ je počet článkov vo vzorke $k$. $\frac{n_k}{n}$ predstavuje vážený priemer pre kadžú vzorku, ktorú je nutné zohladniť pretože nie každá vzorka môže mať rovnaký počet článkov. V ideálnom prípade, keď má každá vzorka rovnaký počet clánkov tak vážený priemer je predstavovaný hodnotou $\frac{1}{k}$. $MSE_k$ predstavuje strednú kvadraticku chybu vzorky $k$, ktorá sa vypočíta pomocou vzorca:
+kde $K$ je počet vzoriek, $n$ je počet všetkých článkov a $n_k$ je počet článkov vo vzorke $k$. $\frac{n_k}{n}$ predstavuje vážený priemer pre každú vzorku, ktorú je nutné zohľadniť pretože nie každá vzorka môže mať rovnaký počet článkov. V prípade, že má každá vzorka rovnaký počet článkov, vážený priemer je predstavovaný hodnotou $\frac{1}{k}$. $MSE_k$ predstavuje strednú kvadratickú chybu vzorky $k$, ktorá sa vypočíta pomocou vzorca:
 \begin{displaymath}
-MSE_k = \frac{\sum_{i \in C_k}(y_i-\hat{y_i})^2}{n_k}
+MSE_k = \frac{\sum_{i \in C_k}(y_i-\hat{y_i})^2}{n_k},
 \end{displaymath}
-kde $y_i$ je pôvodná návšetvnosť a $\hat{y_i}$ je predikovaná návšetevnosť. Rozdiel medzi týmito dvoma hodnotami je chyba predikcie.
+kde $y_i$ je pôvodná návštevnosť a $\hat{y_i}$ je predikovaná návštevnosť. Rozdiel medzi týmito dvomi hodnotami je chyba predikcie.
 
-Okrem CV sme úspešnosť viacnásobnej lineárnej regresie hodnotili aj pomocou priemernej chyby predikcie a mediánu chyby predikcie. Tieto hodnoty boli vypočítané zo všetkých chýb predikice naraz.      
+Okrem CV sme úspešnosť viacnásobnej lineárnej regresie hodnotili aj pomocou priemernej chyby predikcie a pomocou mediánu chyby predikcie. Tieto hodnoty boli vypočítané zo všetkých chýb predikcie naraz.
 
-Problémom pri takomto prístupe sú outliari, teda články, ktoré sú počas dňa najviac čítane a svojou popularitou vyčnievajú od zvyšku článkov. Približne sa každý deň vydajú 3 takéto články z celkového počtu 400 článkov za jeden deň. Riešením tohto problému bude odstránenie takýchto článkov z našej množiny dát.
+Problémom pri takomto prístupe sú outliari, teda články, ktoré sú počas dňa najviac čítane a svojou popularitou vyčnievajú od zvyšku článkov. Približne sa každý deň vydajú 3 takéto články z celkového počtu v priemere 400 článkov za jeden deň. Riešením tohto problému bude odstránenie takýchto článkov z našej množiny dát.
 
 \section{Experimentovanie}
 % vyhodnotenie: vyhodnotenie výsledkov, porovnanie metód (aj s publikovanými prácami) a náčrt ďalšieho vhodného smerovania projektu
@@ -178,20 +182,5 @@ Atribúty $x_{ij}$ sme počas experimentovania doplnili viacerými novými atrib
   \bibitem{pulse} Bandari, Roja; Asur, Sitaram; Huberman, Bernardo A., The Pulse of News in Social Media : Forecasting Popularity, ICWSM 2012, AAAI Press
   \bibitem{topic} Toraman, Cagri, News Selection with Topic Modeling, Fifth BCS-IRSG Symposium on Future Directions in Information Access (FDIA 2013)
 \end{thebibliography}
-
-\clearpage
-{\Large Podiel práce\par}
-
-\vspace{5mm}
-
-\begin{tabular}{|l|l|l|}
-  \hline
-  \textbf{Meno} & \textbf{Venoval sa hlavne} & \textbf{Percentuálny podiel} \\
-  \hline
-  Martin Číž & Písanie dokumentov, práca nad databázou & 50 \% \\
-  \hline
-  Peter Uherek & Repozitár, skriptá v R & 50 \% \\
-  \hline
- \end{tabular}
 
 \end{document}
