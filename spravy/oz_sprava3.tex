@@ -15,10 +15,8 @@
 % ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 \documentclass[runningheads,a4paper]{llncs}
-
+\usepackage{dcolumn}
 \usepackage{amssymb}
 \setcounter{tocdepth}{3}
 \usepackage{graphicx}
@@ -37,14 +35,15 @@
 Slovenská technická univerzita}
 \authorrunning{Predikcia popularity článkov}
 \maketitle
+
 \begin{abstract}
   Našou úlohou je zostrojiť model predikcie popularity článkov na základe spravodajských článkov, ktoré sú v textovej podobe.
   Popularita článkov je z pohľadu času nestála. Inú popularitu môže mať článok hodinu od vydania a inú deň po vydaní.
   V našom kontexte chápeme popularitu ako počet všetkých jedinečných prístupov k článku v určitej dobe od jeho vydania.
-  Na začiatku sa pokúšame texty jednotlivých získaných článkov premeniť na vektor termov, text preto spracovávame vo fázach odstraňovanie stop slov a lematizácia.
+  Na začiatku sa pokúšame texty jednotlivých získan-ých článkov premeniť na vektor termov, text preto spracovávame vo fázach odstraňovanie stop slov a lematizácia.
   Pre predikovanie počtu prístupov používame metódy regresie v strojovom učení.
   Zaujímavý vplyv na popularitu článku má samotný text článku, názov článku alebo dĺžka článku, preto sa zameriavame na skúmanie vplyvu týchto faktorov na samotnú popularitu článkov.
-  Experimentom demonštrujeme použitie spomínaných metód, pričom poukazujeme na bariéry, ktoré nám bránia v presnom zmeraní predikcie.
+  Experimentom demonštrujeme použitie spo-mínaných metód, pričom poukazujeme na bariéry, ktoré nám bránia v presnom zmeraní predikcie.
   Príkladom je neproporcionálne rozloženie článkov po zoradení do rebríčka popularity - existuje veľa priemerných a slabšie čítaných článkov a len malá množina článkov získava veľkú popularitu.
 \end{abstract}
 
@@ -170,17 +169,100 @@ kde $y_i$ je pôvodná návštevnosť a $\hat{y_i}$ je predikovaná návštevnos
 
 Okrem CV sme úspešnosť viacnásobnej lineárnej regresie hodnotili aj pomocou priemernej chyby predikcie a pomocou mediánu chyby predikcie. Tieto hodnoty boli vypočítané zo všetkých chýb predikcie naraz.
 
-Problémom pri takomto prístupe sú outliari, teda články, ktoré sú počas dňa najviac čítane a svojou popularitou vyčnievajú od zvyšku článkov. Približne sa každý deň vydajú 3 takéto články z celkového počtu v priemere 400 článkov za jeden deň. Riešením tohto problému bude odstránenie takýchto článkov z našej množiny dát.
-
 \section{Experimentovanie}
 % vyhodnotenie: vyhodnotenie výsledkov, porovnanie metód (aj s publikovanými prácami) a náčrt ďalšieho vhodného smerovania projektu
-Viacnásobná lineárna regresia a krížová validácia bola aplikovaná v jazyku R pomocou balíčku DAAG
-Atribúty $x_{ij}$ sme počas experimentovania doplnili viacerými novými atribútmi, ktoré reprezentovali   
+Viacnásobná lineárna regresia a krížová validácia bola aplikovaná v jazyku R pomocou metódy {\em cvlm}, ktorá sa nachádza v balíčku DAAG. Táto metóda sama rozdelila dáta do viacerých vzoriek a i sama vypočítala hodnotu CV. 
+
+Články, ktoré sme vybrali do lineárnej regresie boli vydané v 15 dňovom období, z ktorého pochádza dump, ktorý sme mali k dispozícii. Dôvod prečo sme si vybrali iba články, ktoré boli vydané iba v tomto období je taký, že sme potrebovali jednotnú množinu článkov, pri ktorých sme exaktne vedeli určiť ich návštevnosť. Pri článkoch, ktoré boli vydané skôr ako bolo časové obdobie zbierania datasetu sme nemali možnosť ako overiť ich skutočnú návštevnosť po vydaní datasetu. Mohli sme zistiť iba ich návštevnosť v rámci obdobia zbierania dát, čo pre naše potreby nebolo vhodné.
+
+Počet článkov, ktoré sme mohli použiť bolo 4196. Pre všetky texty týchto článkov sme aplikovali metódu TF-IDF, ktorá nám ku každému článku priradila vektor hodnôt všetkých slov, ktoré sa vyskytovali v textoch článkov. Počet jedinečných slov pre všetky články bol 58 652. Túto hodnotu sme redukovali a zobrali sme iba najdôležitejšie slová, ktoré sa nachádzali v článkoch. V prvom teste sme takto nechali 106 slov, ktoré sme spoločne s návštevnosťou aplikovali v metóde {\em cvlm}, ktorá rozdelila články na 10 vzoriek po 419 článkov. 
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{|l|c|c|c|}
+	\hline
+	Vstupné atribúty & CV & Priemerná chyba & Medián chyby \\ \hline \hline
+	106 slov & 74 & 1279 & 157 \\ \hline
+	404 slov & 26.9 & 1240 & 145 \\ \hline
+	1079 slov & 9.88 & 1186 & 132 \\ \hline
+	1357 slov & 7.86 & 1151 & 119 \\ \hline
+	2649 slov & 7.74 & 909 & 88.1 \\ \hline
+	4526 slov & 3.21e+27 & 1.02e+11 & 97.1 \\ \hline
+	5006 slov & 7.08e+30 & 3.16e+18 & 120 \\ \hline
+	\end{tabular}
+\end{center}
+\caption{Tabuľka znázorňuje výsledky pre 4196 článkov s postupným pridávaním atribútov, slov, do viacnásobnej lineárnej regresie. }
+\end{table}
+
+Výsledky krížovej validácie z prvého experimentu je možné vidieť v tabuľke číslo 1. Hodnoty CV sú uvedené v logaritmickom tvare. Hodnoty premennej chyby a mediánu chyby predikcie sú uvedené v reálnom tvare. Pri prvom experimente pri 4196 článkoch sme mali priemernú chybu predikcie 1279 a medián chyby bol 157. Tieto dve hodnoty nám naznačujú, že náš regresný model pri polovice článkov dokázal uhádnuť ich čítanosť s chybou menšou ako 157. Priemerná chyba je o niečo vyššia čo je spôsobené veľkou rozmanitosťou čítanosti v článkoch.
+
+Presnosť prvého experimentu je taktiež vidieť na obrázku číslo 1, ktorý znázorňuje na $x$-ovej osi predikovanú návštevnosť a $y$-ovej reálnu čítanosť. V ideálnom prípade, keby náš model predikoval návštevnosť so 100 \% úspešnosťou, tak by všetky hodnoty na obrázku museli byť uložené lineárne. V reálnom prípade sú uložené ako je vidieť na obrázku číslo 1. Za povšimnutie stojí desiata vzorka, ktorá je na obrázku znázornená modrou farbou. Táto vzorka sa zjavne vyznačuje veľkým počtom článkov s vysokou návštevnosťou. Väčšina článkov z tejto vzorky je predikovaná veľmi zle, čo je vidieť aj z obrázku ako tieto výsledky vystupujú z hlavného prúdu výsledkov. Tieto predikcie nám značne zhoršujú výsledok.  
+  
+                 
+\begin{figure}[h!]
+  \centering  
+      \includegraphics[width=1.0\textwidth]{plot3.png}
+  \caption{Obrázok znázorňuje presnosť predikcie pre prvý experiment.}
+\end{figure}
+
+Ako je vidieť z tabuľky číslo 1 pri ďalších experimentoch sme pokračovali pridávaním atribútov, slov do viacnásobnej lineárnej regresie. Výsledok sa postupne zlepšoval až sme narazili na taký počet slov, ktorý nám značne zhoršil výsledok. Takýto zlom nastal pri pridaní 4526 slov do modelu. Zmena rozloženia chyb pri postupnom pridávani slov do modelu je vidieť na obrázku číslo 2.
+
+\begin{figure}[h!]
+  \centering  
+      \includegraphics[width=1.0\textwidth]{proc.png}
+  \caption{Obrázok znázorňuje postupnosť vývoju chýb pri pridávaní viac slov do modelu. Postupnosť je znázorňená pre počet 106 slov v modeli, 2649 slov a 4526 slov. }  
+\end{figure}   	
+
+Ako je vidieť z postupnosti na obrázku číslo 2 hlavný prúd, respektíve chyby sa viac rozptýlili pri pridaní väčšieho množstva slov do modelu. Toto do značnej miery pomohlo, ale za istou hranicou to už nebolo únosne. Preto sme tento postup označili ako slepú uličku a rozhodli sme sa vrátiť späť k najlepšiemu výsledku čo sme doposiaľ dosiahli, čo bolo pri počte 2649 slov v modeli a pokračovať iným smerom.
+
+Ako prvý problém sme identifikovali outlaiery, teda články, ktoré sú počas dňa najviac čítane a svojou popularitou vyčnievali od zvyšku článkov. Približne každý deň sa vydá 10 takýchto článkov z celkového počtu v priemere 400 článkov za jeden deň. Takéto články nám značne zhoršovali výsledok a preto bolo jedným zo zaujímavých riešení ako sa s nimi vysporiadať ich odstránenie z predikčného modelu.
+
+Pozorovaním čítanosti a ich zobrazením v histograme sme sa rozhodli odstrániť všetky články z čítanosťou nad 10 000. Takýchto článkov bolo celkom 141. Z celkového počtu článkov 4196 nám teda zostalo 4055. Výsledky po tejto úprave je vidieť v tabuľke číslo 2.
+
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{|p{5cm}|c|c|c|}
+	\hline
+	Vstupné atribúty & CV & Priemerná chyba & Medián chyby \\ \hline \hline
+	2649 slov & 7.6 & 438 & 73.6 \\ \hline
+	2649 slov, dĺžka článku & 7.41 & 434 & 72.6 \\ \hline
+	2649 slov, dĺžka článku, kategória & 7.1 & 421 & 69.3 \\ \hline
+	2649 slov, dĺžka článku, kategória, sekcia & 6.89 & 410 & 67.5  \\ \hline
+	2649 slov, dĺžka článku, kategória, sekcia, čas & 7.12 & 434 & 70.5 \\ \hline
+	\end{tabular}
+\end{center}
+\caption{Tabuľka znázorňuje výsledky pre 4055 článkov s postupným pridávaním atribútov do viacnásobnej lineárnej regresie. }
+\end{table}
+
+Ako je vidieť z tabuľky číslo 1 a 2 odstránením slov sme dosiahli značne zlepšenie, čo avšak nie je prekvapujúce. Priemerná chyba bola pred odstránením slov 909 po odstránení slov je 438. Medián bol 88,1 po odstránení je 73,6. Z týchto výsledkov len vyplýva, že sme si upravili štatistiku, ale nie samotný predikčný model.
+  
+Ďalšie experimenty sme zmerali na pridávanie nových atribútov do modelu. Ako je vidieť z tabuľky číslo 2 v prvom stĺpci sú uvedené nové atribúty, ktoré sme do modelu pridali. Pri prvom experimente takéhoto typu sme pridali dĺžku článkov, respektíve počet slov v ich texte. Táto úprava modelu bola úspešná a predikcia sa nám o málo zlepšila.
+
+Ďalšiu úpravou bolo pridanie názvu kategórie, v ktorej sa článok nachádza na koniec každého textu článku. Takýto text sme znovu spracovali v metóde TF-IDF a potom sme znovu vybrali iba tie najdôležitejšie slová. Táto zmena nám značne pomohla a preto sme sa rozhodli podobným postupom pridať aj názov sekcie a opäť to pomohlo.
+
+Poslednou, avšak nie až tak úspešnou úpravou bolo pridanie aspektu času vydania článku. Do modelu sme pridali ako nový nominálny atribút, hodinu vydania, týždeň vydania, deň vydania a deň vydania slovom, ktorý sme podobne ako v predchádzajúcich prípadoch pridali na koniec textu. Táto úprava nám značne zhoršila výsledok a preto sme ju označili ako ďalšiu slepú uličku.
+
+\begin{figure}[h!]
+  \centering  
+      \includegraphics[width=1.0\textwidth]{plot11.png}
+  \caption{Obrázok znázorňuje najlepšiu konfiguráciu atribútov(2649 slov, dĺžka článku, kategória, sekcia), ktorú sme s modelom dosiahli. }  
+\end{figure} 
+
+Najlepším výsledkom, ktorý sme dosiahli bola kombinácia atribútov 2649 slov spolu s dĺžkou článku, kategóriou a sekciou článku, ktorú je vidieť na obrázku číslo 3. Priemerná chyba tejto kombinácie bola 410 a medián chyby bol 67.5, čo v porovnaní so začiatočnou hodnotou je rázne zlepšenie.
+
+\section{Záver} 
+Predikcia popularity článkov je komplexná úloha a v našej práci sme sa jej dotkli len veľmi letmo. Je treba rozlíšiť či chcem predpovedať čitanosť všetkých článkov alebo len istej skupiny článkov, ktorá vyčnieva alebo naopak je nevýrazná. Zaujímavou úlohou by mohol byť hľadanie článkov, ktoré majú veľkú čitanosť, teda outlaierov. Keby sme vedeli podľa textu rozdeliť články na dve kategórie (napr. populárne a menej populárne), tak by sme vedeli upraviť predikčné modely na všetky kategórie, pre ktoré by to bolo potrebné a tak predikovať lepšie výsledky.
+
+Model by sa dal zlepšiť aj nahradením súčasnej reprezentácie slov, ktorá je vytvorená  pomocou TF-IDF, za inú reprezentáciu vytvorenou pomocou neurónových sieti a učenia reprezentácie. Takéto reprezentácia by možno dokázala zachytiť lepšie vzťahy medzi slovami a poskytla by iné pohľady na dáta. 
+
+Poslednou, ale taktiež významnou úpravou by mohlo byť analyzovanie vývoju článkov v čase a určovanie dôležitých slov v texte, ktoré značne odlišujú text od iného textu (angl. topic modeling). Takéto a iné nové formy atribútov v regresnom modely by mohli pomôcť určiť presnejšiu popularitu článkov.  
+
+
 
 \begin{thebibliography}{7}
   \bibitem{diplomovka} Sopko, Pavol, Odporúčanie novinových článkov zohľadňujúce externý kontext používateľa, 2014, FIIT STU Bratislava
   \bibitem{pulse} Bandari, Roja; Asur, Sitaram; Huberman, Bernardo A., The Pulse of News in Social Media : Forecasting Popularity, ICWSM 2012, AAAI Press
   \bibitem{topic} Toraman, Cagri, News Selection with Topic Modeling, Fifth BCS-IRSG Symposium on Future Directions in Information Access (FDIA 2013)
 \end{thebibliography}
-
 \end{document}
